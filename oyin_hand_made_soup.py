@@ -3,7 +3,7 @@ importing necessary libraries
 """
 import requests
 # import pandas as pd
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -25,7 +25,7 @@ def scrape():
     # to overcome limited resources
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")
-    browser = uc.Chrome(options=options,detach=True)
+    browser = uc.Chrome(options=options,detach=True, version_main=120)
     browser.get(url)
     time.sleep(10)
 
@@ -49,8 +49,9 @@ def scrape():
 
     home = browser.current_window_handle
     action = ActionChains(browser)
-    product_brand = "oyin_hand_made"
     product = product_list[0]
+    product_brand = "oyin_hand_made"
+
     # for product in product_list:
     try:
         browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
@@ -67,9 +68,17 @@ def scrape():
     time.sleep(10)
     browser.switch_to.window(browser.window_handles[1])
     product_name = browser.find_element(By.XPATH,'//h1[@class="productView-title"]').text.strip()
-    ingredients = browser.find_element(By.XPATH, '//dd[@class="<dd class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
-    print(ingredients)
+    prodcut_ingredients = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
+    product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
+
+
     browser.close()
+    product_data = {'brand_name': product_brand,
+                    'product_name': product_name,
+                    'prodcut_ingredients': prodcut_ingredients,
+                    'product_function': product_function
+                }
+    print(product_data)
 
 scrape()
 
