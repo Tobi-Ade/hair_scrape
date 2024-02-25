@@ -25,7 +25,7 @@ def scrape():
     # to overcome limited resources
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")
-    browser = uc.Chrome(options=options,detach=True, version_main=120)
+    browser = uc.Chrome(options=options,detach=True)
     browser.get(url)
     time.sleep(10)
 
@@ -72,8 +72,15 @@ def scrape():
     
     reviews_list = []
     reviews = browser.find_elements(By.XPATH,'//article[@itemprop="review"]')
+    for r
     print(f"first page review count: {len(reviews)}")
-    reviews_list.append(reviews)
+    for review in reviews:
+        reviewer_name = browser.find_elements(By.CLASS_NAME, 'productReview-author').text
+        review_comment = ""
+        review_date = ""
+        review_rating = ""
+
+    # reviews_list.append(reviews)
     # print(browser.current_url)
     next_page = browser.find_element(By.XPATH, '//a[@class="pagination-link"]')
 
@@ -84,10 +91,11 @@ def scrape():
         time.sleep(5)
         browser.switch_to.window(browser.window_handles[-1])
         print(browser.current_url)
+        time.sleep(10)
         reviews = browser.find_elements(By.XPATH,'//article[@itemprop="review"]')
-        [reviews_list.append(review) for review in reviews if review not in reviews_list]
+        # [reviews_list.append(review) for review in reviews if review not in reviews_list]
         break
-    print(f"last review count: {len(reviews)}")
+    # print(f"last review count: {len(reviews)}")
 
 
     #     try:
