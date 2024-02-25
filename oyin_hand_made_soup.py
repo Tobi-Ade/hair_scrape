@@ -25,7 +25,7 @@ def scrape():
     # to overcome limited resources
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")
-    browser = uc.Chrome(options=options,detach=True)
+    browser = uc.Chrome(options=options,detach=True, version_main=120)
     browser.get(url)
     time.sleep(10)
 
@@ -71,30 +71,47 @@ def scrape():
     product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
     
     reviews_list = []
-    reviews = browser.find_elements(By.XPATH,'//article[@itemprop="review"]')
-    for r
-    print(f"first page review count: {len(reviews)}")
-    for review in reviews:
-        reviewer_name = browser.find_elements(By.CLASS_NAME, 'productReview-author').text
-        review_comment = ""
-        review_date = ""
-        review_rating = ""
+    reviews = browser.find_elements(By.XPATH,'//li[@class="productReview"]/article')
+    print(f"reviews: {reviews}")
+    if len(reviews) > 0:
+        while reviews:
+            for review in reviews:
+                reviewer_name = review.find_element(By.XPATH, '//p[@class="productReview-author"]//span[@itemprop="name"]').text
+                review_comment = review.find_element(By.XPATH, '//p[@itemprop="reviewBody"]').text
+                review_date = review.find_element(By.XPATH, '//p[@class="productReview-author"]').text
+                review_rating = review.find_elements(By.XPATH, '//span[@class="productReview-ratingNumber"]').text
+                
+                data = {
+                    'product_brand': product_brand,
+                    'product_name': product_name,
+                    'prodcut_ingredients': prodcut_ingredients,
+                    'product_function': product_function,
+                    'reviewer_name': reviewer_name,
+                    'review_comment': review_comment,
+                    'review_date': review_date,
+                    'review_rating': review_rating 
 
-    # reviews_list.append(reviews)
+                } 
+                break
+        
+
+    print(data)        
+    #        
+    # # reviews_list.append(reviews)
     # print(browser.current_url)
-    next_page = browser.find_element(By.XPATH, '//a[@class="pagination-link"]')
+    # next_page = browser.find_element(By.XPATH, '//a[@class="pagination-link"]')
 
     
-    time.sleep(10)
-    while next_page:
-        next_page.send_keys(Keys.CONTROL + Keys.RETURN)
-        time.sleep(5)
-        browser.switch_to.window(browser.window_handles[-1])
-        print(browser.current_url)
-        time.sleep(10)
-        reviews = browser.find_elements(By.XPATH,'//article[@itemprop="review"]')
-        # [reviews_list.append(review) for review in reviews if review not in reviews_list]
-        break
+    # time.sleep(10)
+    # while next_page:
+    #     next_page.send_keys(Keys.CONTROL + Keys.RETURN)
+    #     time.sleep(5)
+    #     browser.switch_to.window(browser.window_handles[-1])
+    #     print(browser.current_url)
+    #     time.sleep(10)
+    #     reviews = browser.find_elements(By.XPATH,'//article[@itemprop="review"]')
+    #     # [reviews_list.append(review) for review in reviews if review not in reviews_list]
+    #     break
     # print(f"last review count: {len(reviews)}")
 
 
@@ -122,12 +139,7 @@ def scrape():
     
 
 
-    # product_data = {'brand_name': product_brand,
-    #                 'product_name': product_name,
-    #                 'prodcut_ingredients': prodcut_ingredients,
-    #                 'product_function': product_function
-    #             }
-    # print(product_data)
+
     
 
     #comment, name, rating, date
