@@ -36,6 +36,7 @@ def scrape():
         pass
 
     product_list = []
+    reviews = []
     i = 0
     while i < 4:
         items = browser.find_elements(By.XPATH, '//h4[@class="card-title"]/a')
@@ -49,9 +50,8 @@ def scrape():
 
     home = browser.current_window_handle
     action = ActionChains(browser)
-    product = product_list[0]
     product_brand = "oyin_hand_made"
-
+    product = product_list[0]
     # for product in product_list:
     try:
         browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
@@ -63,22 +63,68 @@ def scrape():
     except JavascriptException:
         pass
     time.sleep(5)
-    # action.move_to_element(product).key_down(Keys.CONTROL).click().key_up(Keys.CONTROL).perform()
     product.send_keys(Keys.CONTROL + Keys.RETURN)
     time.sleep(10)
     browser.switch_to.window(browser.window_handles[1])
     product_name = browser.find_element(By.XPATH,'//h1[@class="productView-title"]').text.strip()
     prodcut_ingredients = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
     product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
+    
+    reviews_list = []
+    reviews = browser.find_elements(By.XPATH,'//article[@itemprop="review"]')
+    print(f"first page review count: {len(reviews)}")
+    reviews_list.append(reviews)
+    # print(browser.current_url)
+    next_page = browser.find_element(By.XPATH, '//a[@class="pagination-link"]')
+
+    
+    time.sleep(10)
+    while next_page:
+        next_page.send_keys(Keys.CONTROL + Keys.RETURN)
+        time.sleep(5)
+        browser.switch_to.window(browser.window_handles[-1])
+        print(browser.current_url)
+        reviews = browser.find_elements(By.XPATH,'//article[@itemprop="review"]')
+        [reviews_list.append(review) for review in reviews if review not in reviews_list]
+        break
+    print(f"last review count: {len(reviews)}")
 
 
+    #     try:
+    #         browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
+    #     except JavascriptException:
+    #         pass
+    #     time.sleep(2)
+    #     try:
+    #         browser.execute_script("let element = getElementByClassName('launcher-container background-primary smile-launcher-font-color-light smile-launcher-border-radius-circular launcher-closed');element.remove()")
+    #     except JavascriptException:
+    #         pass
+    #     wait = WebDriverWait(browser, 10)
+    #     wait.until(EC.presence_of_all_elements_located((By.XPATH, '//a[@class="pagination-link"]')))
+    #     time.sleep(5)
+    #     reviews = browser.find_elements(By.XPATH,'//article[@itemprop="review"]')
+    #     [reviews_list.append(review) for review in reviews if review not in reviews_list]
+    
+    # print(len(reviews_list))
+
+
+    
+    
+
+    
+
+
+    # product_data = {'brand_name': product_brand,
+    #                 'product_name': product_name,
+    #                 'prodcut_ingredients': prodcut_ingredients,
+    #                 'product_function': product_function
+    #             }
+    # print(product_data)
+    
+
+    #comment, name, rating, date
     browser.close()
-    product_data = {'brand_name': product_brand,
-                    'product_name': product_name,
-                    'prodcut_ingredients': prodcut_ingredients,
-                    'product_function': product_function
-                }
-    print(product_data)
+
 
 scrape()
 
