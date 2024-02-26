@@ -25,7 +25,7 @@ def scrape():
     # to overcome limited resources
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")
-    browser = uc.Chrome(options=options,detach=True, version_main=120)
+    browser = uc.Chrome(options=options,detach=True)
     browser.get(url)
     time.sleep(10)
 
@@ -67,28 +67,28 @@ def scrape():
     time.sleep(10)
     browser.switch_to.window(browser.window_handles[1])
     product_name = browser.find_element(By.XPATH,'//h1[@class="productView-title"]').text.strip()
-    prodcut_ingredients = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
+    product_ingredients = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
     product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
     
     reviews_list = []
     reviews = browser.find_elements(By.XPATH,'//li[@class="productReview"]/article')
-    print(f"reviews: {reviews}")
     if len(reviews) > 0:
-        while reviews:
             for review in reviews:
-                reviewer_name = review.find_element(By.XPATH, '//p[@class="productReview-author"]//span[@itemprop="name"]').text
-                review_comment = review.find_element(By.XPATH, '//p[@itemprop="reviewBody"]').text
-                review_date = review.find_element(By.XPATH, '//p[@class="productReview-author"]').text
-                review_rating = review.find_elements(By.XPATH, '//span[@class="productReview-ratingNumber"]').text
+                reviewer_name = review.find_element(By.XPATH, '//header//p[@class="productReview-author"]//span[@itemprop="name"]').get_attribute('outerHTML')
+                # review_topic = review.find_element(By.XPATH, '//h5[@class="productReview-title"]').text
+                review_comment = review.find_element(By.XPATH, '//p[@itemprop="reviewBody"]').get_attribute('outerHTML')
+                # review_date = review.find_element(By.CLASS_NAME, "productReview-author").get_attribute('outerHTML')
+                review_rating = review.find_element(By.XPATH, '//header//span[@class="productReview-rating rating--small"]//span[@itemprop="ratingValue"]').get_attribute('outerHTML')
                 
                 data = {
                     'product_brand': product_brand,
                     'product_name': product_name,
-                    'prodcut_ingredients': prodcut_ingredients,
+                    'product_ingredients': product_ingredients,
                     'product_function': product_function,
+                    # 'review_topic': review_topic,
                     'reviewer_name': reviewer_name,
                     'review_comment': review_comment,
-                    'review_date': review_date,
+                    # 'review_date': review_date,
                     'review_rating': review_rating 
 
                 } 
