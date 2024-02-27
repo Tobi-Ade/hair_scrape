@@ -71,7 +71,7 @@ def scrape():
     product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
     time.sleep(5)
     next_page = browser.find_element(By.XPATH, '//a[@class="pagination-link"]') 
-    while len(next_page) > 0 and next_page[-1].is_enabled():
+    while next_page and next_page[-1].is_enabled():
         try:
             browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
         except JavascriptException:
