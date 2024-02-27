@@ -70,49 +70,50 @@ def scrape():
     product_ingredients = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
     product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
     
-    reviews_list = []
-    reviews = browser.find_elements(By.XPATH,'//li[@class="productReview"]/article')
-    if len(reviews) > 0:
-            for review in reviews:
-                reviewer_name = review.find_element(By.XPATH, '//header//p[@class="productReview-author"]//span[@itemprop="name"]').get_attribute('outerHTML')
-                # review_topic = review.find_element(By.XPATH, '//h5[@class="productReview-title"]').text
-                review_comment = review.find_element(By.XPATH, '//p[@itemprop="reviewBody"]').get_attribute('outerHTML')
-                # review_date = review.find_element(By.CLASS_NAME, "productReview-author").get_attribute('outerHTML')
-                review_rating = review.find_element(By.XPATH, '//header//span[@class="productReview-rating rating--small"]//span[@itemprop="ratingValue"]').get_attribute('outerHTML')
-                
-                data = {
-                    'product_brand': product_brand,
-                    'product_name': product_name,
-                    'product_ingredients': product_ingredients,
-                    'product_function': product_function,
-                    # 'review_topic': review_topic,
-                    'reviewer_name': reviewer_name,
-                    'review_comment': review_comment,
-                    # 'review_date': review_date,
-                    'review_rating': review_rating 
-
-                } 
-                break
+    returns = []
+    next_page = browser.find_element(By.XPATH, '//a[@class="pagination-link"]')
+    while len(next_page) > 0 and next_page[-1].is_enabled():
+        try:
+            browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
+        except JavascriptException:
+            pass
+        time.sleep(2)
+        try:
+            browser.execute_script("let element = getElementByClassName('launcher-container background-primary smile-launcher-font-color-light smile-launcher-border-radius-circular launcher-closed');element.remove()")
+        except JavascriptException:
+            pass
+        time.sleep(5)        
         
+        reviews = browser.find_elements(By.XPATH,'//li[@class="productReview"]/article')
+        if len(reviews) > 0:
+                for review in reviews:
+                    reviewer_name = review.find_element(By.XPATH, '//header//p[@class="productReview-author"]//span[@itemprop="name"]').get_attribute('innerHTML')
+                    review_topic = review.find_element(By.XPATH, '//h5[@class="productReview-title"]').get_attribute('innerHTML')
+                    review_comment = review.find_element(By.XPATH, '//p[@itemprop="reviewBody"]').text
+                    # review_date = review.find_element(By.CLASS_NAME, "productReview-author").text
+                    review_rating = review.find_element(By.XPATH, '//header//span[@class="productReview-rating rating--small"]//span[@itemprop="ratingValue"]').text
+                    
+                    data = {
+                        'product_brand': product_brand,
+                        'product_name': product_name,
+                        'product_ingredients': product_ingredients,
+                        'product_function': product_function,
+                        'review_topic': review_topic,
+                        'reviewer_name': reviewer_name,
+                        'review_comment': review_comment,
+                        # 'review_date': review_date,
+                        'review_rating': review_rating 
 
-    print(data)        
-    #        
-    # # reviews_list.append(reviews)
-    # print(browser.current_url)
-    # next_page = browser.find_element(By.XPATH, '//a[@class="pagination-link"]')
-
+                    } 
+                    returns.append(data)
     
-    # time.sleep(10)
-    # while next_page:
-    #     next_page.send_keys(Keys.CONTROL + Keys.RETURN)
-    #     time.sleep(5)
-    #     browser.switch_to.window(browser.window_handles[-1])
-    #     print(browser.current_url)
-    #     time.sleep(10)
-    #     reviews = browser.find_elements(By.XPATH,'//article[@itemprop="review"]')
-    #     # [reviews_list.append(review) for review in reviews if review not in reviews_list]
-    #     break
-    # print(f"last review count: {len(reviews)}")
+            
+        time.sleep(10)
+        next_page.send_keys(Keys.CONTROL + Keys.RETURN)
+        time.sleep(5)
+        browser.switch_to.window(browser.window_handles[-1])
+        # print(browser.current_url)
+        time.sleep(10)
 
 
     #     try:
@@ -132,17 +133,8 @@ def scrape():
     
     # print(len(reviews_list))
 
-
-    
-    
-
-    
-
-
-
-    
-
     #comment, name, rating, date
+    time.sleep(5)
     browser.close()
 
 
