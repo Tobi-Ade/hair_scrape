@@ -66,12 +66,16 @@ def scrape():
     product.send_keys(Keys.CONTROL + Keys.RETURN)
     time.sleep(10)
     browser.switch_to.window(browser.window_handles[1])
+    product_page = browser.current_window_handle
     product_name = browser.find_element(By.XPATH,'//h1[@class="productView-title"]').text.strip()
     product_ingredients = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
     product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
     time.sleep(5)
     next_page = browser.find_element(By.XPATH, '//a[@class="pagination-link"]') 
-    while next_page and next_page[-1].is_enabled():
+    time.sleep(5)
+
+    while next_page:
+        next_page = browser.find_element(By.XPATH, '//a[@class="pagination-link"]') 
         try:
             browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
         except JavascriptException:
@@ -105,34 +109,29 @@ def scrape():
 
                     } 
                     final_data.append(data)
-    
-            
-        time.sleep(10)
+
+        else:
+            data = {
+                        'product_brand': product_brand,
+                        'product_name': product_name,
+                        'product_ingredients': product_ingredients,
+                        'product_function': product_function,
+                        'review_topic': "",
+                        'reviewer_name': "",
+                        'review_comment': "",
+                        # 'review_date': review_date,
+                        'review_rating': ""
+             }
+            final_data.append(data)
+
         next_page.send_keys(Keys.CONTROL + Keys.RETURN)
         time.sleep(5)
         browser.switch_to.window(browser.window_handles[-1])
-        # print(browser.current_url)
+        print(browser.current_url)  
         time.sleep(10)
 
 
-    #     try:
-    #         browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
-    #     except JavascriptException:
-    #         pass
-    #     time.sleep(2)
-    #     try:
-    #         browser.execute_script("let element = getElementByClassName('launcher-container background-primary smile-launcher-font-color-light smile-launcher-border-radius-circular launcher-closed');element.remove()")
-    #     except JavascriptException:
-    #         pass
-    #     wait = WebDriverWait(browser, 10)
-    #     wait.until(EC.presence_of_all_elements_located((By.XPATH, '//a[@class="pagination-link"]')))
-    #     time.sleep(5)
-    #     reviews = browser.find_elements(By.XPATH,'//article[@itemprop="review"]')
-    #     [reviews_list.append(review) for review in reviews if review not in reviews_list]
-    
-    # print(len(reviews_list))
 
-    #comment, name, rating, date
     time.sleep(5)
     browser.close()
     return final_data
