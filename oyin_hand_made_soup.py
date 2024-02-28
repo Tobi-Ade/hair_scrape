@@ -8,6 +8,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import JavascriptException
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -71,11 +72,11 @@ def scrape():
     product_ingredients = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
     product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
     time.sleep(5)
-    next_page = browser.find_element(By.XPATH, '//a[@class="pagination-link"]') 
+    next_page = browser.find_element(By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]') 
     time.sleep(5)
 
     while next_page:
-        next_page = browser.find_element(By.XPATH, '//a[@class="pagination-link"]') 
+        print(browser.current_url)
         try:
             browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
         except JavascriptException:
@@ -109,32 +110,34 @@ def scrape():
 
                     } 
                     final_data.append(data)
-
-        else:
-            data = {
-                        'product_brand': product_brand,
-                        'product_name': product_name,
-                        'product_ingredients': product_ingredients,
-                        'product_function': product_function,
-                        'review_topic': "",
-                        'reviewer_name': "",
-                        'review_comment': "",
-                        # 'review_date': review_date,
-                        'review_rating': ""
-             }
-            final_data.append(data)
-
+                    time.sleep(5)
+        wait = WebDriverWait(browser, 10, ignored_exceptions=StaleElementReferenceException)      
+        wait.until(EC.presence_of_all_elements_located((By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]')))
         next_page.send_keys(Keys.CONTROL + Keys.RETURN)
         time.sleep(5)
-        browser.switch_to.window(browser.window_handles[-1])
-        print(browser.current_url)  
+        next_page = browser.find_element(By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]') 
+
+        # browser.switch_to.window(browser.window_handles[-1])
+        # print(browser.current_url)  
         time.sleep(10)
 
-
+    else:
+        data = {
+                    'product_brand': product_brand,
+                    'product_name': product_name,
+                    'product_ingredients': product_ingredients,
+                    'product_function': product_function,
+                    'review_topic': "",
+                    'reviewer_name': "",
+                    'review_comment': "",
+                    # 'review_date': review_date,
+                    'review_rating': ""
+            }
+        final_data.append(data)
 
     time.sleep(5)
     browser.close()
-    return final_data
+    print(final_data)
 
 
 scrape()
