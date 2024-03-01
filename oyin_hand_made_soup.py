@@ -145,7 +145,7 @@ def scrape():
                 next_page = False
                     
         else:
-            data_list[prod_name)] = final_data
+            data_list[prod_name] = final_data
             print(f"Reviews for {product} successfully saved")
         time.sleep(10)
         browser.switch_to.window(home)
