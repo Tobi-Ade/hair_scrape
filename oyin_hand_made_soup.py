@@ -146,14 +146,20 @@ def scrape():
                     
         else:
             data_list[prod_name] = final_data
-            print(f"Reviews for {product} successfully saved")
+            print(f"Reviews for {prod_name} successfully saved")
+            print()
         time.sleep(10)
+        browser.close()
         browser.switch_to.window(home)
         time.sleep(10)
-        break
     
-    browser.close()
-    print(data_list)
-scrape()
+    return data_list
+
+
+if __name__ == '__main__':
+     data = scrape()
+     print(data)
+     
+     
 
 
