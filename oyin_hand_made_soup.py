@@ -39,7 +39,7 @@ def scrape():
         pass
 
     product_list = []
-    final_data = []
+    data_list = {}
     i = 0
     while i < 4:
         items = browser.find_elements(By.XPATH, '//h4[@class="card-title"]/a')
@@ -54,98 +54,106 @@ def scrape():
     home = browser.current_window_handle
     action = ActionChains(browser)
     product_brand = "oyin_hand_made"
-    product = product_list[0]
-    # for product in product_list:
-    try:
-        browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
-    except JavascriptException:
-        pass
-    time.sleep(2)
-    try:
-        browser.execute_script("let element = getElementByClassName('launcher-container background-primary smile-launcher-font-color-light smile-launcher-border-radius-circular launcher-closed');element.remove()")
-    except JavascriptException:
-        pass
-    time.sleep(5)
-    product.send_keys(Keys.CONTROL + Keys.RETURN)
-    time.sleep(10)
-    browser.switch_to.window(browser.window_handles[1])
-    product_page = browser.current_window_handle
-    product_name = browser.find_element(By.XPATH,'//h1[@class="productView-title"]').text.strip()
-    product_ingredients = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
-    product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
-    time.sleep(5)
-    next_page = browser.find_element(By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]') 
-    time.sleep(5)
-    # reviews = browser.find_elements(By.XPATH,'//li[@class="productReview"]/article')
-
-    while next_page:
+    # product = product_list[0]
+    for product in product_list:
+        prod_name = product.get_attribute('innerHTML')
+        print(f"Getting data for {product.get_attribute('innerHTML')}")
+        time.sleep(5)
         try:
+            browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
+        except JavascriptException:
+            pass
+        time.sleep(2)
+        try:
+            browser.execute_script("let element = getElementByClassName('launcher-container background-primary smile-launcher-font-color-light smile-launcher-border-radius-circular launcher-closed');element.remove()")
+        except JavascriptException:
+            pass
+        time.sleep(5)
+        product.send_keys(Keys.CONTROL + Keys.RETURN)
+        time.sleep(10)
+        browser.switch_to.window(browser.window_handles[1])
+        product_page = browser.current_window_handle
+        product_name = browser.find_element(By.XPATH,'//h1[@class="productView-title"]').text.strip()
+        product_ingredients = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
+        product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
+        time.sleep(5)
+        next_page = browser.find_element(By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]') 
+        time.sleep(5)
+        # reviews = browser.find_elements(By.XPATH,'//li[@class="productReview"]/article')
+        final_data = []
+        while next_page:
             print(browser.current_url)
+            browser.refresh()
+            time.sleep(10)
             try:
-                browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
+                    browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
             except JavascriptException:
-                pass
+                    pass
             time.sleep(2)
             try:
-                browser.execute_script("let element = getElementByClassName('launcher-container background-primary smile-launcher-font-color-light smile-launcher-border-radius-circular launcher-closed');element.remove()")
+                    browser.execute_script("let element = getElementByClassName('launcher-container background-primary smile-launcher-font-color-light smile-launcher-border-radius-circular launcher-closed');element.remove()")
             except JavascriptException:
-                pass
+                    pass
             time.sleep(5)        
-            
-            reviews = browser.find_elements(By.XPATH,'//li[@class="productReview"]/article')
-            if len(reviews) > 0:
-                    for review in reviews:
-                        reviewer_name = review.find_element(By.TAG_NAME, 'header').find_element(By.TAG_NAME, 'span').get_attribute('innerHTML')
-                        review_topic = review.find_element(By.TAG_NAME, 'div').find_element(By.TAG_NAME, 'h5').get_attribute('innerHTML')
-                        review_comment = review.find_element(By.TAG_NAME, 'div').find_element(By.TAG_NAME, 'p').get_attribute('innerHTML')
-                        review_date = review.find_element(By.CLASS_NAME, "productReview-author").get_attribute('innerHTML').split("-")[1].strip()
-                        review_rating = review.find_element(By.TAG_NAME, 'header').find_element(By.XPATH, './/span[@class="productReview-rating rating--small"]//span[@class="productReview-ratingNumber"]').get_attribute("innerHTML")
-                        
-                        data = {
+            try:
+                reviews = browser.find_elements(By.XPATH,'//li[@class="productReview"]/article')
+                if len(reviews) > 0:
+                        for review in reviews:
+                            reviewer_name = review.find_element(By.TAG_NAME, 'header').find_element(By.TAG_NAME, 'span').get_attribute('innerHTML')
+                            review_topic = review.find_element(By.TAG_NAME, 'div').find_element(By.TAG_NAME, 'h5').get_attribute('innerHTML')
+                            review_comment = review.find_element(By.TAG_NAME, 'div').find_element(By.TAG_NAME, 'p').get_attribute('innerHTML')
+                            review_date = review.find_element(By.CLASS_NAME, "productReview-author").get_attribute('innerHTML').split("-")[1].strip()
+                            review_rating = review.find_element(By.TAG_NAME, 'header').find_element(By.XPATH, './/span[@class="productReview-rating rating--small"]//span[@class="productReview-ratingNumber"]').get_attribute("innerHTML")
+                            
+                            data = {
+                                'product_brand': product_brand,
+                                'product_name': product_name,
+                                'product_ingredients': product_ingredients,
+                                'product_function': product_function,
+                                'review_topic': review_topic,
+                                'reviewer_name': reviewer_name,
+                                'review_comment': review_comment,
+                                'review_date': review_date,
+                                'review_rating': review_rating 
+
+                            } 
+                            # print(data)
+                            # print()
+                            final_data.append(data)
+                            time.sleep(5)
+                wait = WebDriverWait(browser, 10, ignored_exceptions=(NoSuchElementException, StaleElementReferenceException))      
+                wait.until(EC.presence_of_all_elements_located((By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]')))
+                next_page = browser.find_element(By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]') 
+                time.sleep(5)
+                next_page.send_keys(Keys.CONTROL + Keys.RETURN)
+                time.sleep(10)
+                
+            except (NoSuchElementException, TimeoutException):
+                review = "No review"
+                data = {
                             'product_brand': product_brand,
                             'product_name': product_name,
                             'product_ingredients': product_ingredients,
                             'product_function': product_function,
-                            'review_topic': review_topic,
-                            'reviewer_name': reviewer_name,
-                            'review_comment': review_comment,
-                            'review_date': review_date,
-                            'review_rating': review_rating 
-
-                        } 
-                        final_data.append(data)
-                        time.sleep(5)
-            wait = WebDriverWait(browser, 10, ignored_exceptions=(NoSuchElementException, StaleElementReferenceException))      
-            wait.until(EC.presence_of_all_elements_located((By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]')))
-            next_page.send_keys(Keys.CONTROL + Keys.RETURN)
-            time.sleep(5)
-            next_page = browser.find_element(By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]') 
-
-            time.sleep(10)
-
-        except (NoSuchElementException, TimeoutException):
-            review = "No review"
-            data = {
-                        'product_brand': product_brand,
-                        'product_name': product_name,
-                        'product_ingredients': product_ingredients,
-                        'product_function': product_function,
-                        'review_topic': "",
-                        'reviewer_name': "",
-                        'review_comment': "",
-                        # 'review_date': review_date,
-                        'review_rating': ""
-                }
-            final_data.append(data)
-            next_page = False
-            
-    else:
-        print("Last Page")
-    time.sleep(5)
+                            'review_topic': "",
+                            'reviewer_name': "",
+                            'review_comment': "",
+                            'review_date': "",
+                            'review_rating': ""
+                    }
+                final_data.append(data)
+                next_page = False
+                    
+        else:
+            data_list[prod_name)] = final_data
+            print(f"Reviews for {product} successfully saved")
+        time.sleep(10)
+        browser.switch_to.window(home)
+        time.sleep(10)
+        break
+    
     browser.close()
-    print(final_data)
-
-
+    print(data_list)
 scrape()
 
 
