@@ -27,7 +27,7 @@ def scrape():
     options.add_argument("--start-maximized") 
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")
-    browser = uc.Chrome(options=options,detach=True)
+    browser = uc.Chrome(options=options,detach=True, version_main=120)
     browser.get(url)
     time.sleep(15)
     print(browser.current_url)
@@ -37,23 +37,34 @@ def scrape():
         products = []
         next_page = browser.find_element(By.XPATH, '//li//a[@class="next page-numbers"]')
         time.sleep(5)
+        home_page = browser.current_window_handle
         while next_page:
-            time.sleep(5)
-            print(browser.current_url)
-            wait = WebDriverWait(browser, 10)
-            wait.until(EC.presence_of_all_elements_located((By.XPATH, '//li//a[@class="next page-numbers"]')))
-            products_links = browser.find_elements(By.XPATH, '//div[@class="nr-details"]')
-            page_products = [product.find_element(By.TAG_NAME, 'a') for product in products_links]
-            [products.append(product) for product in page_products]
-            print(len(products))
-            next_page = browser.find_element(By.XPATH, '//li//a[@class="next page-numbers"]')
-            next_page.send_keys(Keys.CONTROL + Keys.RETURN)
-            time.sleep(5)
-        else:
-            products_links = browser.find_elements(By.XPATH, '//div[@class="nr-details"]')
-            page_products = [product.find_element(By.TAG_NAME, 'a') for product in products_links]
-            [products.append(product) for product in page_products if product not in products]
-        print(f"final len: {len(products)}")
+            try:
+                time.sleep(5)
+                print(browser.current_url)
+                # wait = WebDriverWait(browser, 10)
+                # wait.until(EC.presence_of_all_elements_located((By.XPATH, '//li//a[@class="next page-numbers"]')))
+                products_links = browser.find_elements(By.XPATH, '//div[@class="nr-details"]')
+                page_products = [product.find_element(By.TAG_NAME, 'a') for product in products_links]
+                [products.append(product) for product in page_products]
+                print(len(products))
+                print()
+                next_page = browser.find_element(By.XPATH, '//li//a[@class="next page-numbers"]')
+                next_page.send_keys(Keys.CONTROL + Keys.RETURN)
+                time.sleep(5)
+                browser.switch_to.window(browser.window_handles[-1])
+            except NoSuchElementException:
+                next_page = False
+                products_links = browser.find_elements(By.XPATH, '//div[@class="nr-details"]')
+                page_products = [product.find_element(By.TAG_NAME, 'a') for product in products_links]
+                [products.append(product) for product in page_products if product not in products]
+                browser.switch_to.window(home_page)
+
+        time.sleep(5)
+        check = [product.get_attribute('outerHTML') for product in products]
+        print(check)
+
+
 
         # product = products[0]
         # home = browser.current_window_handle
