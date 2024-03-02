@@ -33,19 +33,39 @@ def scrape():
     print(browser.current_url)
 
     try:
-        products_links = browser.find_elements(By.XPATH, '//div[@class="nr-details"]')
-        products = [product.find_element(By.TAG_NAME, 'a') for product in products_links]
-        product = products[0]
-        home = browser.current_window_handle
-        action = ActionChains(browser)
-        product_brand = "tginatural"
+        # products_links = browser.find_elements(By.XPATH, '//div[@class="nr-details"]')
+        products = []
+        next_page = browser.find_element(By.XPATH, '//li//a[@class="next page-numbers"]')
         time.sleep(5)
-        product.send_keys(Keys.CONTROL + Keys.RETURN)
-        time.sleep(10)
-        browser.switch_to.window(browser.window_handles[1])
-        time.sleep(10)
-        print(browser.current_url)
-        product_page = browser.current_window_handle
+        while next_page:
+            time.sleep(5)
+            print(browser.current_url)
+            wait = WebDriverWait(browser, 10)
+            wait.until(EC.presence_of_all_elements_located((By.XPATH, '//li//a[@class="next page-numbers"]')))
+            products_links = browser.find_elements(By.XPATH, '//div[@class="nr-details"]')
+            page_products = [product.find_element(By.TAG_NAME, 'a') for product in products_links]
+            [products.append(product) for product in page_products]
+            print(len(products))
+            next_page = browser.find_element(By.XPATH, '//li//a[@class="next page-numbers"]')
+            next_page.send_keys(Keys.CONTROL + Keys.RETURN)
+            time.sleep(5)
+        else:
+            products_links = browser.find_elements(By.XPATH, '//div[@class="nr-details"]')
+            page_products = [product.find_element(By.TAG_NAME, 'a') for product in products_links]
+            [products.append(product) for product in page_products if product not in products]
+        print(f"final len: {len(products)}")
+
+        # product = products[0]
+        # home = browser.current_window_handle
+        # action = ActionChains(browser)
+        # product_brand = "tginatural"
+        # time.sleep(5)
+        # product.send_keys(Keys.CONTROL + Keys.RETURN)
+        # time.sleep(10)
+        # browser.switch_to.window(browser.window_handles[1])
+        # time.sleep(10)
+        # print(browser.current_url)
+        # product_page = browser.current_window_handle
 
         # product_name = browser.find_element(By.XPATH,'//h1[@class="productView-title"]').text.strip()
         # product_ingredients = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
