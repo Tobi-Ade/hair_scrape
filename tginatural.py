@@ -29,7 +29,34 @@ def scrape():
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")
     browser = uc.Chrome(options=options,detach=True)
     browser.get(url)
-    time.sleep(10)
+    time.sleep(15)
     print(browser.current_url)
+
+    try:
+        products_links = browser.find_elements(By.XPATH, '//div[@class="nr-details"]')
+        products = [product.find_element(By.TAG_NAME, 'a') for product in products_links]
+        product = products[0]
+        home = browser.current_window_handle
+        action = ActionChains(browser)
+        product_brand = "tginatural"
+        time.sleep(5)
+        product.send_keys(Keys.CONTROL + Keys.RETURN)
+        time.sleep(10)
+        browser.switch_to.window(browser.window_handles[1])
+        time.sleep(10)
+        print(browser.current_url)
+        product_page = browser.current_window_handle
+
+        # product_name = browser.find_element(By.XPATH,'//h1[@class="productView-title"]').text.strip()
+        # product_ingredients = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
+        # product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
+        # time.sleep(5)
+
+
+
+        
+    except Exception as e:
+        print(e)
+
 
 scrape()
