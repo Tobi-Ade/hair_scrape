@@ -27,7 +27,7 @@ def scrape():
     options.add_argument("--start-maximized") 
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")
-    browser = uc.Chrome(options=options,detach=True, version_main=120)
+    browser = uc.Chrome(options=options,detach=True)
     browser.get(url)
     time.sleep(15)
     print(browser.current_url)
@@ -38,15 +38,23 @@ def scrape():
         next_page = browser.find_element(By.XPATH, '//li//a[@class="next page-numbers"]')
         time.sleep(5)
         home_page = browser.current_window_handle
+        # wait = WebDriverWait(browser, 10)
+        # wait.until(EC.presence_of_all_elements_located((By.XPATH, '//li//a[@class="next page-numbers"]')))
+        products_links = browser.find_elements(By.XPATH, '//div[@class="nr-details"]')
+        page_products = [product.find_element(By.TAG_NAME, 'a') for product in products_links]
+        [products.append(product) for product in page_products]
+
+        pages = []
         while next_page:
             try:
                 time.sleep(5)
                 print(browser.current_url)
+                pages.append(browser.current_url)
                 # wait = WebDriverWait(browser, 10)
                 # wait.until(EC.presence_of_all_elements_located((By.XPATH, '//li//a[@class="next page-numbers"]')))
                 products_links = browser.find_elements(By.XPATH, '//div[@class="nr-details"]')
                 page_products = [product.find_element(By.TAG_NAME, 'a') for product in products_links]
-                [products.append(product) for product in page_products]
+                [products.append(product) for product in page_products if product not in products]
                 # print(len(products))
                 print()
                 next_page = browser.find_element(By.XPATH, '//li//a[@class="next page-numbers"]')
@@ -58,37 +66,55 @@ def scrape():
                 products_links = browser.find_elements(By.XPATH, '//div[@class="nr-details"]')
                 page_products = [product.find_element(By.TAG_NAME, 'a') for product in products_links]
                 [products.append(product) for product in page_products if product not in products]
-                print("products links successfully saved...")
+                # print("products links successfully saved...")
                 browser.switch_to.window(home_page)
+        print(f"products count: {len(products)}")
+        # print(f"home page: {browser.current_url}")
+        page_count = len(pages)
+        # print(f"no of pages: {page_count}")
 
-        time.sleep(5)
-        product = products[-1]
-    #     try:
-    #         browser.get(product)
-    #         time.sleep(5)
-    #         print(browser.current_url)
-    #     except StaleElementReferenceException as exception:
-    #         # product = products[-1]
-    #         print(exception)
-
-    #     # action = ActionChains(browser)
-    #     # product_brand = "tginatural"
-    #     # product.send_keys(Keys.CONTROL + Keys.RETURN)
-    #     # browser.switch_to.window(browser.window_handles[1])
-    #     # time.sleep(5)
-    #     # print(browser.current_url)
-    #     # product_page = browser.current_window_handle
-
-    #     # product_name = browser.find_element(By.XPATH,'//h1[@class="productView-title"]').text.strip()
-    #     # product_ingredients = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
-    #     # product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
-    #     # time.sleep(5)
+        # browser.refresh()
+        try:
+            time.sleep(5)
+            last_item = products[-1]
+            print(last_item)
+            # last_item.send_keys(Keys.CONTROL + Keys.RETURN)
+            # browser.switch_to.window(browser.window_handles[-1])
+            # time.sleep(5)
+            # print(browser.current_url)
 
 
+            i =  0
+            while i < page_count:
+                curr_page = browser.current_window_handle
+                try:
+                    last_item.send_keys(Keys.CONTROL + Keys.RETURN)
+                    time.sleep(5)
+                    browser.switch_to.window(browser.window_handles[-1])
+                    print(browser.current_url)
+                    i+=1 
+                    break
+                except NoSuchElementException:
+                    next_page = browser.find_element(By.XPATH, '//li//a[@class="next page-numbers"]')
+                    next_page.send_keys(Keys.CONTROL + Keys.RETURN)
+                    time.sleep(5)
+                    browser.switch_to.window(browser.window_handles[-1])
+                    i += 1
 
-        
-    # except Exception as e:
-    #     print(e)
+            time.sleep(5)
+            print("moved to product page")
+            time.sleep(10)
+            print(browser.current_url)
+
+        except Exception as error:
+            print(error)
+        # time.sleep(5)    
+        # last_item.send_keys(Keys.CONTROL + Keys.RETURN)
+        # browser.switch_to.window(browser.window_handles[1])
+        # time.sleep(5)
+        # print(browser.current_url)
+    except Exception as e:
+        print(e)
 
 
 scrape()
