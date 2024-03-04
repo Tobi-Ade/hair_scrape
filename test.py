@@ -52,13 +52,24 @@ def scrape():
             product_name = browser.find_element(By.XPATH, '//div[@class="pro-detail-tgin-text"]//h1').text
             info = browser.find_element(By.XPATH, '//div[@class="product-info-content-column"]//div[@class="inner"]')
             product_desc = browser.find_element(By.XPATH, '//div[@class="pro-detail-tgin-text"]//p').text
-            length = len(info.find_elements(By.TAG_NAME, 'p'))
-            product_ingredients = info.find_elements(By.TAG_NAME, 'p')[3]
+            product_directions = info.find_elements(By.TAG_NAME, 'p')[2].text.split("Directions:")[1]
+            product_ingredients = info.find_elements(By.TAG_NAME, 'p')[3].text.split("Ingredients:")[1]
+            reviews_button = browser.find_element(By.XPATH, 'div[@class="woocommerce-tabs wc-tabs-wrapper  nav nav-tabs"]//button[@id="tab-3"]')
+            reviews_button.click
+
+
+
+
+
+
+
+
             data["product_name"] = product_name
             data["product_desc"] = product_desc
+            data["product_directions"] = product_directions
             data["product_ingredients"] = product_ingredients
 
-            print(product_ingredients.text)
+            print(data)
             break
         
 
