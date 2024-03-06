@@ -16,6 +16,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import undetected_chromedriver as uc 
 import time
+import traceback
 from selenium.webdriver.common.action_chains import ActionChains 
 
 def scrape():
@@ -31,7 +32,7 @@ def scrape():
     browser.get(url)
     time.sleep(15)
     print(browser.current_url)
-
+    data_list = {}
     try:
         home_page = browser.current_window_handle
         products_links = browser.find_elements(By.XPATH, '//div[@class="nr-details"]')
@@ -41,8 +42,12 @@ def scrape():
         # wait = WebDriverWait(browser, 10)
         # wait.until(EC.presence_of_all_elements_located((By.XPATH, '//li//a[@class="next page-numbers"]')))
         product_brand = "tgin"
+        
         for product in page_products:
-            data = {}
+            time.sleep(5)
+            wait = WebDriverWait(browser, 10)
+            wait.until(EC.presence_of_all_elements_located((By.XPATH, '//div[@class="nr-details"]')))
+            final_data = []
             time.sleep(5)
             product.send_keys(Keys.CONTROL + Keys.RETURN)
             time.sleep(5)
@@ -50,32 +55,63 @@ def scrape():
             print(browser.current_url)
             product_page = browser.current_window_handle
             product_name = browser.find_element(By.XPATH, '//div[@class="pro-detail-tgin-text"]//h1').text
-            info = browser.find_element(By.XPATH, '//div[@class="product-info-content-column"]//div[@class="inner"]')
-            product_desc = browser.find_element(By.XPATH, '//div[@class="pro-detail-tgin-text"]//p').text
-            product_directions = info.find_elements(By.TAG_NAME, 'p')[2].text.split("Directions:")[1]
-            product_ingredients = info.find_elements(By.TAG_NAME, 'p')[3].text.split("Ingredients:")[1]
-            reviews_button = browser.find_element(By.XPATH, 'div[@class="woocommerce-tabs wc-tabs-wrapper  nav nav-tabs"]//button[@id="tab-3"]')
-            reviews_button.click
+            print(f"getting data for {product_name}...")
+            if "Green Tea Super Moist Leave in Conditioner" in product_name:
+                info = browser.find_element(By.XPATH, '//div[@class="product-info-content-column"]//div[@class="inner"]')
+                product_desc = browser.find_element(By.XPATH, '//div[@class="pro-detail-tgin-text"]//p').text
+                product_directions = info.find_elements(By.TAG_NAME, 'p')[4].text.split("Directions:")[1]
+                product_ingredients = info.find_elements(By.TAG_NAME, 'p')[5].text.split("Ingredients:")[1]
+            else:
+                info = browser.find_element(By.XPATH, '//div[@class="product-info-content-column"]//div[@class="inner"]')
+                product_desc = browser.find_element(By.XPATH, '//div[@class="pro-detail-tgin-text"]//p').text
+                product_directions = info.find_elements(By.TAG_NAME, 'p')[2].text.split("Directions:")[1]
+                product_ingredients = info.find_elements(By.TAG_NAME, 'p')[3].text.split("Ingredients:")[1]
+            reviews_button = browser.find_element(By.XPATH, '//button[@id="tab-3"]')
+            reviews_button.click()
+            time.sleep(5)
+            reviews = browser.find_elements(By.XPATH, './/div[@class="stamped-reviews"]//div[@class="stamped-review"]')
+            for review in reviews:
+                header = review.find_element(By.XPATH, './/div[@class="stamped-review-header"]')
+                content = review.find_element(By.XPATH, './/div[@class="stamped-review-content"]')
+                review_topic = content.find_element(By.XPATH, './/h3').text
+                reviewer_name = header.find_element(By.XPATH, './/strong[@class="author"]').text
+                review_content = content.find_element(By.XPATH, './/p[@class="stamped-review-content-body"]').text
+                review_date = header.find_element(By.XPATH, './/div[@class="created"]').text
+                review_rating = str(content.find_element(By.XPATH, './/span').get_attribute("outerHTML").split(" ")[4]).split("=")[-1].split('"')[1].split('"')[0]
+                # break
+                data = {
+                        'product_brand': product_brand,
+                        'product_name': product_name,
+                        'product_ingredients': product_ingredients,
+                        'product_desc': product_desc,
+                        'product_directions': product_directions,
+                        'reviewer_name': reviewer_name,
+                        'review_topic': review_topic,
+                        'review_comment': review_content,
+                        'review_date': review_date,
+                        'review_rating': review_rating 
 
-
-
-
-
-
-
-
-            data["product_name"] = product_name
-            data["product_desc"] = product_desc
-            data["product_directions"] = product_directions
-            data["product_ingredients"] = product_ingredients
-
-            print(data)
+                        } 
+                final_data.append(data)
+            browser.close()
+            try:
+                print(final_data)
+                print()
+                print()
+            except UnicodeEncodeError:
+                print(str(final_data).encode('cp1252', errors='ignore'))
+            # break
+            data_list[product_name] = final_data
+            
+                # break
+            browser.switch_to.window(home_page)
             break
-        
-
+            
        
     except Exception as e:
         print(e)
-
+        traceback.print_exc()
+    
+    browser.quit()
 
 scrape()
