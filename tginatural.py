@@ -81,10 +81,10 @@ def scrape():
                             for review in reviews:
                                 header = review.find_element(By.XPATH, './/div[@class="stamped-review-header"]')
                                 content = review.find_element(By.XPATH, './/div[@class="stamped-review-content"]')
-                                review_topic = content.find_element(By.XPATH, './/h3').text
-                                reviewer_name = header.find_element(By.XPATH, './/strong[@class="author"]').text
-                                review_content = content.find_element(By.XPATH, './/p[@class="stamped-review-content-body"]').text
-                                review_date = header.find_element(By.XPATH, './/div[@class="created"]').text
+                                review_topic = content.find_element(By.XPATH, './/h3').get_attribute('innerHTML')
+                                reviewer_name = header.find_element(By.XPATH, './/strong[@class="author"]').get_attribute('innerHTML')
+                                review_content = content.find_element(By.XPATH, './/p[@class="stamped-review-content-body"]').get_attribute('innerHTML')
+                                review_date = header.find_element(By.XPATH, './/div[@class="created"]').get_attribute('innerHTML')
                                 review_rating = str(content.find_element(By.XPATH, './/span').get_attribute("outerHTML").split(" ")[4]).split("=")[-1].split('"')[1].split('"')[0]
                                 # break
                                 data = {
