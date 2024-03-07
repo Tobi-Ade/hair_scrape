@@ -66,7 +66,10 @@ def scrape():
                     else:
                         info = browser.find_element(By.XPATH, '//div[@class="product-info-content-column"]//div[@class="inner"]')
                         product_desc = browser.find_element(By.XPATH, '//div[@class="pro-detail-tgin-text"]//p').text
-                        product_directions = info.find_elements(By.TAG_NAME, 'p')[2].text.split("Directions:")[1]
+                        try:
+                            product_directions = info.find_elements(By.TAG_NAME, 'p')[2].text.split("Directions:")[1]
+                        except IndexError:
+                            product_directions = info.find_elements(By.TAG_NAME, 'p')[2].text.split("Instructions:")[1]
                         product_ingredients = info.find_elements(By.TAG_NAME, 'p')[3].text.split("Ingredients:")[1]
                     reviews_button = browser.find_element(By.XPATH, '//button[@id="tab-3"]')
                     reviews_button.click()
@@ -74,6 +77,8 @@ def scrape():
                     reviews = browser.find_elements(By.XPATH, './/div[@class="stamped-reviews"]//div[@class="stamped-review"]')
                     while product_page:
                         try:
+                            wait = WebDriverWait(browser, 10)
+                            wait.until(EC.presence_of_all_elements_located((By.XPATH, '//div[@class="stamped-reviews"]//div[@class="stamped-review"]')))
                             reviews = browser.find_elements(By.XPATH, './/div[@class="stamped-reviews"]//div[@class="stamped-review"]')
                             for review in reviews:
                                 header = review.find_element(By.XPATH, './/div[@class="stamped-review-header"]')
@@ -103,13 +108,14 @@ def scrape():
                             wait.until(EC.presence_of_all_elements_located((By.XPATH, '//li[@class="next"]/a')))
                             next_rev_page = browser.find_element(By.XPATH, '//li[@class="next"]/a')
                             print(next_rev_page.get_attribute('outerHTML'))
+                            wait = WebDriverWait(browser, 15)
+                            wait.until(EC.element_to_be_clickable((By.XPATH, '//li[@class="next"]/a')))
                             next_rev_page.send_keys(Keys.CONTROL + Keys.RETURN)
                             time.sleep(5)
                         except (NoSuchElementException, TimeoutException):
                             print("Last Review Page")
                             print()
                             break
-                    
                     browser.close()
                     try:
                         print(final_data)
@@ -134,7 +140,6 @@ def scrape():
                 browser.switch_to.window(browser.window_handles[-1])
                 print(browser.current_url)
                 time.sleep(5)
-                break
             except(NoSuchElementException, StaleElementReferenceException):
                     print("Last Product Page")
                     break
