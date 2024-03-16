@@ -35,12 +35,114 @@ def scrape():
     data_list = {}
     i = 0
     while i < 3:
-        items = browser.find_elements(By.XPATH, '//div[@class="grid-view-item--desc-wrapper"]//p[@class="product-grid-title"]/a')
+        items = browser.find_elements(By.XPATH, '//div[@class="grid-view-item--desc-wrapper"]//p[@class="product-grid--title"]/a')
         last_item = items[-1]
         browser.execute_script("arguments[0].scrollIntoView();", last_item)
         wait = WebDriverWait(browser, 10)      
-        wait.until(EC.presence_of_all_elements_located((By.XPATH, '//h4[@class="card-title"]/a')))
-        time.sleep(10)
+        wait.until(EC.presence_of_all_elements_located((By.XPATH, '//div[@class="grid-view-item--desc-wrapper"]//p[@class="product-grid--title"]/a')))
+        # time.sleep(10)
         [product_list.append(item) for item in items if item not in product_list]        
         i+=1
-    print(len(product_list))
+    
+    home = browser.current_window_handle
+    action = ActionChains(browser)
+    product_brand = "girlandhair"
+    # product = product_list[0]
+    for product in product_list:
+        product_name = product.get_attribute('innerHTML')
+        print(f"Getting data for {product_name}")
+        product.send_keys(Keys.CONTROL + Keys.RETURN)
+        time.sleep(10)
+        browser.switch_to.window(browser.window_handles[1])
+        product_page = browser.current_window_handle
+        # product_name = browser.find_element(By.XPATH,'//h1[@class="productView-title"]').text.strip()
+        print(browser.current_url)
+        try:
+            browser.execute_script("let element = getElementByClassName('needsclick klaviyo-form klaviyo-form-version-cid_1 kl-private-reset-css-Xuajs1');element.remove()")
+        except JavascriptException:
+            pass
+        product_desc = browser.find_element(By.XPATH, './/div[@class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content"]//p').get_attribute('innerHTML')
+        print(product_desc)
+        break
+        product_ingredients = browser.find_element(By.XPATH, '//d[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
+        product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
+        time.sleep(5)
+        next_page = browser.find_element(By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]') 
+        time.sleep(5)
+        # reviews = browser.find_elements(By.XPATH,'//li[@class="produivctReview"]/article')
+        final_data = []
+        while next_page:
+            print(browser.current_url)
+            browser.refresh()
+            time.sleep(10)
+            try:
+                    browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
+            except JavascriptException:
+                    pass
+            time.sleep(2)
+            try:
+                    browser.execute_script("let element = getElementByClassName('launcher-container background-primary smile-launcher-font-color-light smile-launcher-border-radius-circular launcher-closed');element.remove()")
+            except JavascriptException:
+                    pass
+            time.sleep(5)        
+            try:
+                reviews = browser.find_elements(By.XPATH,'//li[@class="productReview"]/article')
+                if len(reviews) > 0:
+                        for review in reviews:
+                            reviewer_name = review.find_element(By.TAG_NAME, 'header').find_element(By.TAG_NAME, 'span').get_attribute('innerHTML')
+                            review_topic = review.find_element(By.TAG_NAME, 'div').find_element(By.TAG_NAME, 'h5').get_attribute('innerHTML')
+                            review_comment = review.find_element(By.TAG_NAME, 'div').find_element(By.TAG_NAME, 'p').get_attribute('innerHTML')
+                            review_date = review.find_element(By.CLASS_NAME, "productReview-author").get_attribute('innerHTML').split("-")[1].strip()
+                            review_rating = review.find_element(By.TAG_NAME, 'header').find_element(By.XPATH, './/span[@class="productReview-rating rating--small"]//span[@class="productReview-ratingNumber"]').get_attribute("innerHTML")
+                            
+                            data = {
+                                'product_brand': product_brand,
+                                'product_name': product_name,
+                                'product_ingredients': product_ingredients,
+                                'product_function': product_function,
+                                'review_topic': review_topic,
+                                'reviewer_name': reviewer_name,
+                                'review_comment': review_comment,
+                                'review_date': review_date,
+                                'review_rating': review_rating 
+
+                            } 
+                            # print(data)
+                            # print()
+                            final_data.append(data)
+                            time.sleep(5)
+                wait = WebDriverWait(browser, 10, ignored_exceptions=(NoSuchElementException, StaleElementReferenceException))      
+                wait.until(EC.presence_of_all_elements_located((By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]')))
+                next_page = browser.find_element(By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]') 
+                time.sleep(5)
+                next_page.send_keys(Keys.CONTROL + Keys.RETURN)
+                time.sleep(10)
+                
+            except (NoSuchElementException, TimeoutException):
+                review = "No review"
+                data = {
+                            'product_brand': product_brand,
+                            'product_name': product_name,
+                            'product_ingredients': product_ingredients,
+                            'product_function': product_function,
+                            'review_topic': "",
+                            'reviewer_name': "",
+                            'review_comment': "",
+                            'review_date': "",
+                            'review_rating': ""
+                    }
+                final_data.append(data)
+                next_page = False
+                    
+        else:
+            data_list[prod_name] = final_data
+            print(f"Reviews for {prod_name} successfully saved")
+            print()
+        time.sleep(10)
+        browser.close()
+        browser.switch_to.window(home)
+        time.sleep(10)
+    
+    return data_list
+
+scrape() 
