@@ -62,12 +62,15 @@ def scrape():
         except JavascriptException:
             pass
         product_desc = browser.find_element(By.XPATH, './/div[@class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content"]//p').get_attribute('innerHTML')
+        product_ingredients = browser.find_element(By.XPATH, './/div[@class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content ui-accordion-content-active"]//p').get_attribute('innerHTML')
+        product_directions = browser.find_element(By.XPATH, '//div[@class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content ui-accordion-content-active"]').get_attribute('innerHTML')
         print(product_desc)
+        print()
+        print(product_ingredients)
+        print()
+        print(product_directions)
         break
-        product_ingredients = browser.find_element(By.XPATH, '//d[@class="productView-info-value productView-info-value--cfKeyIngredients"]').text.strip()
-        product_function = browser.find_element(By.XPATH, '//dd[@class="productView-info-value productView-info-value--cfWhatItDoes"]').text.strip()
-        time.sleep(5)
-        next_page = browser.find_element(By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]') 
+        
         time.sleep(5)
         # reviews = browser.find_elements(By.XPATH,'//li[@class="produivctReview"]/article')
         final_data = []
@@ -143,6 +146,6 @@ def scrape():
         browser.switch_to.window(home)
         time.sleep(10)
     
-    return data_list
+    # return data_list
 
 scrape() 
