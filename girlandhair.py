@@ -61,18 +61,28 @@ def scrape():
             browser.execute_script("let element = getElementByClassName('needsclick klaviyo-form klaviyo-form-version-cid_1 kl-private-reset-css-Xuajs1');element.remove()")
         except JavascriptException:
             pass
-        product_desc = browser.find_element(By.XPATH, './/div[@class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content"]//p').get_attribute('innerHTML')
-        product_ingredients = browser.find_element(By.XPATH, './/div[@class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content ui-accordion-content-active"]//p').get_attribute('innerHTML')
-        product_directions = browser.find_element(By.XPATH, '//div[@class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content ui-accordion-content-active"]').get_attribute('innerHTML')
-        print(product_desc)
-        print()
-        print(product_ingredients)
-        print()
-        print(product_directions)
+        product_desc = browser.find_element(By.XPATH, './/div[@id="ui-id-2"]').get_attribute('innerHTML')
+        product_ingredients = browser.find_element(By.XPATH, './/div[@id="ui-id-4"]').get_attribute('innerHTML')
+        product_directions = browser.find_element(By.XPATH, './/div[@id="ui-id-6"]').get_attribute('innerHTML')
+        # wait = WebDriverWait(browser, 10)
+        # wait.until(EC.presence_of_element_located((By.XPATH, '//div[@id="grid"]//div[@class="box action"] ')))
+
+        # iframe = browser.find_element(By.XPATH, '//div[@id="looxReviews"]')
+        iframe = browser.find_elements(By.TAG_NAME, 'iframe')[0]
+        view_frame = iframe.get_attribute("innerHTML")
+        print(view_frame)
+        # browser.switch_to.frame(iframe)
+        # time.sleep(5)
+        # print()
+        # print(product_ingredients)
+        # print()
+        # print(product_directions)
+        # show_reviews = browser.find_element(By.XPATH,'//span[@class="loox-rating-label"]')
+        # show_reviews.click()
+        # reviews = browser.find_elements(By.XPATH,'//div[@id="grid"]//div[@class="box action"]')
+        # reviews = browser.find_elements(By.XPATH,'//div[@class="grid-wrap"]')
+        # print(len(reviews))
         break
-        
-        time.sleep(5)
-        # reviews = browser.find_elements(By.XPATH,'//li[@class="produivctReview"]/article')
         final_data = []
         while next_page:
             print(browser.current_url)
