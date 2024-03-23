@@ -29,7 +29,7 @@ def scrape():
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")
     browser = uc.Chrome(options=options,detach=True)
     browser.get(url)
-    time.sleep(10)
+    time.sleep(5)
 
     product_list = []
     data_list = {}
@@ -38,124 +38,47 @@ def scrape():
         items = browser.find_elements(By.XPATH, '//div[@class="grid-view-item--desc-wrapper"]//p[@class="product-grid--title"]/a')
         last_item = items[-1]
         browser.execute_script("arguments[0].scrollIntoView();", last_item)
-        wait = WebDriverWait(browser, 10)      
+        browser.implicitly_wait(10)
+        wait = WebDriverWait(browser, 10)
         wait.until(EC.presence_of_all_elements_located((By.XPATH, '//div[@class="grid-view-item--desc-wrapper"]//p[@class="product-grid--title"]/a')))
         # time.sleep(10)
-        [product_list.append(item) for item in items if item not in product_list]        
+        [product_list.append(item) for item in items if item not in product_list]
         i+=1
     
     home = browser.current_window_handle
     action = ActionChains(browser)
     product_brand = "girlandhair"
-    # product = product_list[0]
+
     for product in product_list:
         product_name = product.get_attribute('innerHTML')
         print(f"Getting data for {product_name}")
         product.send_keys(Keys.CONTROL + Keys.RETURN)
-        time.sleep(10)
-        browser.switch_to.window(browser.window_handles[1])
+        time.sleep(5)
+        browser.switch_to.window(browser.window_handles[-1])
         product_page = browser.current_window_handle
-        # product_name = browser.find_element(By.XPATH,'//h1[@class="productView-title"]').text.strip()
         print(browser.current_url)
         try:
             browser.execute_script("let element = getElementByClassName('needsclick klaviyo-form klaviyo-form-version-cid_1 kl-private-reset-css-Xuajs1');element.remove()")
         except JavascriptException:
             pass
-        product_desc = browser.find_element(By.XPATH, './/div[@id="ui-id-2"]').get_attribute('innerHTML')
-        product_ingredients = browser.find_element(By.XPATH, './/div[@id="ui-id-4"]').get_attribute('innerHTML')
-        product_directions = browser.find_element(By.XPATH, './/div[@id="ui-id-6"]').get_attribute('innerHTML')
-        # wait = WebDriverWait(browser, 10)
-        # wait.until(EC.presence_of_element_located((By.XPATH, '//div[@id="grid"]//div[@class="box action"] ')))
-
-        # iframe = browser.find_element(By.XPATH, '//div[@id="looxReviews"]')
-        iframe = browser.find_elements(By.TAG_NAME, 'iframe')[0]
-        view_frame = iframe.get_attribute("innerHTML")
-        print(view_frame)
-        # browser.switch_to.frame(iframe)
-        # time.sleep(5)
-        # print()
-        # print(product_ingredients)
-        # print()
-        # print(product_directions)
-        # show_reviews = browser.find_element(By.XPATH,'//span[@class="loox-rating-label"]')
-        # show_reviews.click()
-        # reviews = browser.find_elements(By.XPATH,'//div[@id="grid"]//div[@class="box action"]')
-        # reviews = browser.find_elements(By.XPATH,'//div[@class="grid-wrap"]')
-        # print(len(reviews))
-        break
-        final_data = []
-        while next_page:
-            print(browser.current_url)
-            browser.refresh()
-            time.sleep(10)
-            try:
-                    browser.execute_script("let element = getElementByClassName('page-sidebar mobileSidebar-panel');element.remove()")
-            except JavascriptException:
-                    pass
-            time.sleep(2)
-            try:
-                    browser.execute_script("let element = getElementByClassName('launcher-container background-primary smile-launcher-font-color-light smile-launcher-border-radius-circular launcher-closed');element.remove()")
-            except JavascriptException:
-                    pass
-            time.sleep(5)        
-            try:
-                reviews = browser.find_elements(By.XPATH,'//li[@class="productReview"]/article')
-                if len(reviews) > 0:
-                        for review in reviews:
-                            reviewer_name = review.find_element(By.TAG_NAME, 'header').find_element(By.TAG_NAME, 'span').get_attribute('innerHTML')
-                            review_topic = review.find_element(By.TAG_NAME, 'div').find_element(By.TAG_NAME, 'h5').get_attribute('innerHTML')
-                            review_comment = review.find_element(By.TAG_NAME, 'div').find_element(By.TAG_NAME, 'p').get_attribute('innerHTML')
-                            review_date = review.find_element(By.CLASS_NAME, "productReview-author").get_attribute('innerHTML').split("-")[1].strip()
-                            review_rating = review.find_element(By.TAG_NAME, 'header').find_element(By.XPATH, './/span[@class="productReview-rating rating--small"]//span[@class="productReview-ratingNumber"]').get_attribute("innerHTML")
-                            
-                            data = {
-                                'product_brand': product_brand,
-                                'product_name': product_name,
-                                'product_ingredients': product_ingredients,
-                                'product_function': product_function,
-                                'review_topic': review_topic,
-                                'reviewer_name': reviewer_name,
-                                'review_comment': review_comment,
-                                'review_date': review_date,
-                                'review_rating': review_rating 
-
-                            } 
-                            # print(data)
-                            # print()
-                            final_data.append(data)
-                            time.sleep(5)
-                wait = WebDriverWait(browser, 10, ignored_exceptions=(NoSuchElementException, StaleElementReferenceException))      
-                wait.until(EC.presence_of_all_elements_located((By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]')))
-                next_page = browser.find_element(By.XPATH, '//li[@class="pagination-item pagination-item--next"]//a[@class="pagination-link"]') 
-                time.sleep(5)
-                next_page.send_keys(Keys.CONTROL + Keys.RETURN)
-                time.sleep(10)
-                
-            except (NoSuchElementException, TimeoutException):
-                review = "No review"
-                data = {
-                            'product_brand': product_brand,
-                            'product_name': product_name,
-                            'product_ingredients': product_ingredients,
-                            'product_function': product_function,
-                            'review_topic': "",
-                            'reviewer_name': "",
-                            'review_comment': "",
-                            'review_date': "",
-                            'review_rating': ""
-                    }
-                final_data.append(data)
-                next_page = False
-                    
-        else:
-            data_list[prod_name] = final_data
-            print(f"Reviews for {prod_name} successfully saved")
-            print()
+        text = browser.find_element(By.XPATH, '//div[@id="accordion"]').get_attribute('innerHTML')
+        soup = BeautifulSoup(text, 'html.parser')
+        product_details = soup.find_all('p')
+        product_desc = "".join(str((product_details[0]))).join(str((product_details[1])))
+        product_ingredients = product_details[-4]
+        product_directions = product_details[-2]
+        print()
+        print(product_desc)
+        print()
+        print(product_ingredients)
+        print()
+        print(product_directions)
         time.sleep(10)
-        browser.close()
+
+        # show_reviews = browser.find_element(By.XPATH, '//div[@class="loox-float-toggler loox-floating-widget-btn"]')
+        break
         browser.switch_to.window(home)
         time.sleep(10)
-    
-    # return data_list
+        
 
-scrape() 
+scrape()
