@@ -2,7 +2,7 @@
 importing necessary libraries
 """
 # import pandas as pd
-# from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -16,8 +16,11 @@ from selenium.webdriver.support import expected_conditions as EC
 import undetected_chromedriver as uc 
 import time
 from selenium.webdriver.common.action_chains import ActionChains 
+from selenium.webdriver.chrome.service import Service
+import pandas as pd
 
-def scrape():
+try:
+        
     url = "https://www.girlandhair.com/collections/g-h-system"
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
@@ -26,58 +29,65 @@ def scrape():
     options.add_argument("--start-maximized") # setting the width for the browser
     # to overcome limited resources
     options.add_argument('--disable-dev-shm-usage')
+    options.add_argument("--disable-popup-blocking")
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")
-    browser = uc.Chrome(options=options,detach=True)
+    #     browser = uc.Chrome(options=options,detach=True)
+    service = Service(executable_path='./chromedriver-win64/chromedriver.exe')
+    browser = webdriver.Chrome(service=service,options=options)
     browser.get(url)
-    time.sleep(5)
-
-    product_list = []
-    data_list = {}
-    i = 0
-    while i < 3:
-        items = browser.find_elements(By.XPATH, '//div[@class="grid-view-item--desc-wrapper"]//p[@class="product-grid--title"]/a')
-        last_item = items[-1]
-        browser.execute_script("arguments[0].scrollIntoView();", last_item)
-        wait = WebDriverWait(browser, 10)
-        wait.until(EC.presence_of_all_elements_located((By.XPATH, '//div[@class="grid-view-item--desc-wrapper"]//p[@class="product-grid--title"]/a')))
-        # time.sleep(10)
-        [product_list.append(item) for item in items if item not in product_list]
-        i+=1
-    
-    home = browser.current_window_handle
-    action = ActionChains(browser)
-    product_brand = "girlandhair"
-
-    for product in product_list:
-        product_name = product.get_attribute('innerHTML')
-        print(f"Getting data for {product_name}")
-        product.send_keys(Keys.CONTROL + Keys.RETURN)
-        time.sleep(5)
-        browser.switch_to.window(browser.window_handles[-1])
-        product_page = browser.current_window_handle
-        print(browser.current_url)
-        try:
-            browser.execute_script("let element = getElementByClassName('needsclick klaviyo-form klaviyo-form-version-cid_1 kl-private-reset-css-Xuajs1');element.remove()")
-        except JavascriptException:
-            pass
-        text = browser.find_element(By.XPATH, '//div[@id="accordion"]').get_attribute('innerHTML')
-        soup = BeautifulSoup(text, 'html.parser')
-        product_details = soup.find_all('p')
-        product_desc = "".join(str((product_details[0]))).join(str((product_details[1])))
-        product_ingredients = product_details[-4]
-        product_directions = product_details[-2]
-        print()
-        print(product_desc)
-        print()
-        print(product_ingredients)
-        print()
-        print(product_directions)
-        time.sleep(10)
-
-        # show_reviews = browser.find_element(By.XPATH, '//div[@class="loox-float-toggler loox-floating-widget-btn"]')
-        break
-        browser.switch_to.window(home)
-        time.sleep(10)
+    print(browser.current_url)
+    time.sleep(3)
+    main_browser = browser.current_window_handle
+    all_item = browser.find_elements(By.XPATH,'//div[@class="grid-view-item--desc-wrapper"]')
+    print(len(all_item))
+    total_data = []
+    brand = "Girl + Hair"
+    for item in all_item:
+        href = item.find_element(By.XPATH,'.//p[@class="product-grid--title"]/a').get_attribute('href')
+        browser.execute_script("window.open(arguments[0], '_blank');",href)
+        time.sleep(2)
+        browser.switch_to.window(browser.window_handles[1])
+        product_name = browser.find_element(By.XPATH,'//h1[@class="product-details-product-title"]').text
+        product_details = browser.find_element(By.XPATH,'//div[@id="accordion"]/div[1]')
+        product_details = browser.execute_script("return arguments[0].textContent;", product_details)
+        product_ingredient = browser.find_element(By.XPATH,'//div[@id="accordion"]/div[2]')
+        product_ingredient = browser.execute_script("return arguments[0].textContent;", product_ingredient)
+        product_use = browser.find_element(By.XPATH,'//div[@id="accordion"]/div[3]')
+        product_use = browser.execute_script("return arguments[0].textContent;", product_use)
         
-
-scrape()
+        print('product_name',product_name)
+        
+        browser.switch_to.frame('looxReviewsFrame')
+        load_more = browser.find_elements(By.XPATH,'//button[@id="loadMore"]')
+        while len(load_more) > 0:
+            browser.execute_script("arguments[0].click()", load_more[-1])
+            time.sleep(1)
+            load_more = browser.find_elements(By.XPATH,'//button[@id="loadMore"]')
+            if "display: none" in load_more[-1].get_attribute('style'):
+                break
+        all_reviews = browser.find_elements(By.XPATH,'//div[@class="grid-item-wrap no-img"]')
+        if len(all_reviews) > 0:
+            for rev in all_reviews:
+                review_author = rev.find_element(By.XPATH,'.//div[@class="block title"]').text
+                rating = rev.find_element(By.XPATH,'.//div[@class="block stars"]').get_attribute('aria-label')
+                review_post = rev.find_element(By.XPATH,'.//div[@class="pre-wrap main-text"]').text
+                date = rev.find_element(By.XPATH,'.//div[@class="block time"]').text
+                data = {
+                    'brand':brand,
+                    'product_name':product_name,
+                    "review":review_post,
+                    "reviewer_name":review_author,
+                    "ratings":rating,
+                    "ingredient":product_ingredient.strip(),
+                    "product_function":product_use,
+                    "date":date,
+                    "description":product_details
+                }
+                total_data.append(data)
+            df = pd.DataFrame(total_data)
+            df.to_csv("data.csv")
+        browser.switch_to.default_content()
+        browser.close()
+        browser.switch_to.window(main_browser)
+except Exception as e:
+    print(e)

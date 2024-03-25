@@ -20,6 +20,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
 
+
 def scrape():
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
@@ -81,7 +82,7 @@ def scrape():
                             "product_ingredients": product_ingredients,
                             "product_directions": product_directions
                         }
-        print(product_data)
+        # print(product_data)
         
         show_more = browser.find_element(By.XPATH, './/div[@class="kl_reviews__load_more_button"]//button')
         count = int(int(browser.find_element(By.XPATH, '//div[@class="kl_reviews__list__tab_buttons"]//small').get_attribute("innerHTML").strip())/5)
@@ -110,7 +111,11 @@ def scrape():
             review_date = review.find_element(By.XPATH, './/div[@class="kl_reviews__review__timestamp"]').get_attribute('innerHTML')
             rating_count = review.find_elements(By.CLASS_NAME, 'kl_reviews__full_star')
             review_rating = (len(rating_count))
-
+            
+            review_data["product_name"] = product_name,
+            review_data["product_desc"] = product_desc,
+            review_data["product_ingredients"] = product_ingredients,
+            review_data["product_directions"] = product_directions
             review_data["review_topic"] = review_topic
             review_data["reviewer_name"] = reviewer_name
             review_data["review_content"] = review_content
@@ -119,6 +124,6 @@ def scrape():
             print(review_data)
             final_data.append(review_data)
             
-        data_list[product_data] = final_data
-
+        data_list[product_name] = final_data
+        
 scrape()
