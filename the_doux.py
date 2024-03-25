@@ -24,7 +24,7 @@ import traceback
 from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
-
+import requests
 
 def scrape():
     options = webdriver.ChromeOptions()
@@ -39,8 +39,8 @@ def scrape():
         try:
             products = []
             for i in range(1, 4):
-                url = f"https://thedoux.com/collections/hair-care?page={i}#collection-root"
-                soup = BeautifulSoup(urlopen(url),'html.parser')
+                url = requests.get(f"https://thedoux.com/collections/hair-care?page={i}#collection-root")
+                soup = BeautifulSoup(url.text,'html.parser')
                 products_links = soup.find_all('div',{"class":"product--root"})
                 links = [product.find('a', ) for product in products_links]
                 [products.append(str(link).split('href="')[1].split('"')[0]) for link in links]
