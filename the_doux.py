@@ -17,6 +17,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementNotInteractableException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support import expected_conditions as EC
 import undetected_chromedriver as uc
 import time
@@ -34,7 +35,8 @@ def scrape():
     options.add_argument("--start-maximized")
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")
-    browser = uc.Chrome(options=options,detach=True)
+    service = Service(executable_path='./chromedriver-win64/chromedriver.exe')
+    browser = webdriver.Chrome(service=service, options=options)
     try:
         try:
             products = []
@@ -47,15 +49,17 @@ def scrape():
             print(len(products))
         except Exception as e:
                 print(e)
-        data_list = {}
+        data_list = []
+        home_page = browser.current_window_handle
         product_brand = "The Doux"
         main_page = "https://thedoux.com"
-        # for product_link in products:
-        #     final_data = []
-        #     link = main_page + product_link
-        #     print()
-        #     browser.get(link)
-        #     print(browser.current_url)
+        for product_link in products:
+            final_data = []
+            link = main_page + product_link
+            print()
+            browser.get(link)
+            print(browser.current_url)
+            break
         #     product_name = browser.find_element(By.XPATH, './/div[@class="product-page--block"]//h2').get_attribute("innerHTML").strip()
         #     print(f"getting data for {product_name}...")
         #     info = browser.find_elements(By.XPATH, './/div[@class="easyslider-content-wrapper"]')
