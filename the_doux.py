@@ -56,39 +56,38 @@ def scrape():
         for product_link in products:
             final_data = []
             link = main_page + product_link
-            print()
-            browser.get(link)
+            browser.execute_script("window.open(arguments[0], '_blank');",link)
+            browser.switch_to.window(browser.window_handles[1])
             print(browser.current_url)
-            break
-        #     product_name = browser.find_element(By.XPATH, './/div[@class="product-page--block"]//h2').get_attribute("innerHTML").strip()
-        #     print(f"getting data for {product_name}...")
-        #     info = browser.find_elements(By.XPATH, './/div[@class="easyslider-content-wrapper"]')
-        #     product_desc = info[0].find_elements(By.XPATH, './/span')[-1].get_attribute("innerHTML").strip()
-        #     product_directions = info[2].find_elements(By.XPATH, './/span' or './/p')[-1].get_attribute("innerHTML").strip()
-        #     product_ingredients = info[3].find_elements(By.XPATH, './/p')[-1].get_attribute("innerHTML").strip()
+            product_name = browser.find_element(By.XPATH, './/div[@class="product-page--block"]//h2').get_attribute("innerHTML").strip()
+            print(f"getting data for {product_name}...")
+            info = browser.find_elements(By.XPATH, '//div[@class="easyslider-content-wrapper"]')
+            # product_desc = browser.find_element(By.XPATH, '//div[@class="easyslider-content"]/div[0]')
+            product_desc = browser.execute_script("return arguments[0].textContent;", info[0])
+            # product_directions = browser.find_element(By.XPATH, '//div[@class="easyslider-content"]/div[2]')
+            product_directions = browser.execute_script("return arguments[0].textContent;", info[2])
+            # product_ingredients = browser.find_element(By.XPATH, '//div[@class="easyslider-content"]/div[3]')
+            product_ingredients = browser.execute_script("return arguments[0].textContent;", info[3])
 
-        #     product_data = {
-        #                         "product_name": product_name,
-        #                         "product_desc": product_desc,
-        #                         "product_ingredients": product_ingredients,
-        #                         "product_directions": product_directions
-        #                     }
-        #     # print(product_desc)
-        #     # print()
-        #     # print(product_directions)
-        #     # print()
-        #     # print(product_ingredients)
-        #     reviews_total = browser.find_element(By.XPATH, '//div[@data-bv-show="reviews"]')
-        #     print(reviews_total.get_attribute("innerHTML"))
-        #     break
-            # for review in reviews:
-            #     data = {}
-            #     review_topic = review.find_element(By.XPATH, './/h3[@class="spr-review-header-title"]').get_attribute('innerHTML')
-            #     reviewer_name = review.find_element(By.XPATH, './/span[@class="spr-review-header-byline"]//strong').get_attribute('innerHTML')
-            #     review_content = review.find_element(By.XPATH, './/p[@class="spr-review-content-body"]').get_attribute('innerHTML')
-            #     review_date = review.find_elements(By.XPATH, './/span[@class="spr-review-header-byline"]//strong')[1].get_attribute('innerHTML')
-            #     rating_count = review.find_elements(By.XPATH, './/div[@class="spr-review-header"]//i[@class="spr-icon spr-icon-star"]')
-            #     review_rating = (len(rating_count))
+            reviews = browser.find_element(By.XPATH, '//div[@data-bv-show="reviews"]')
+            print(reviews)
+            break
+            for review in reviews:
+                data = {}
+                review_topic = review.find_element(By.XPATH, './/h3[@class="spr-review-header-title"]').get_attribute('innerHTML')
+                reviewer_name = review.find_element(By.XPATH, './/span[@class="spr-review-header-byline"]//strong').get_attribute('innerHTML')
+                review_content = review.find_element(By.XPATH, './/p[@class="spr-review-content-body"]').get_attribute('innerHTML')
+                review_date = review.find_elements(By.XPATH, './/span[@class="spr-review-header-byline"]//strong')[1].get_attribute('innerHTML')
+                rating_count = review.find_elements(By.XPATH, './/div[@class="spr-review-header"]//i[@class="spr-icon spr-icon-star"]')
+                review_rating = (len(rating_count))
+
+
+            browser.switch_to.default_content()
+            browser.close()
+            browser.switch_to.window(home_page)
+            # break
+
+
 
 
 
